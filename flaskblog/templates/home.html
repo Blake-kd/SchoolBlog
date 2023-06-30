@@ -10,6 +10,7 @@
             </div>
             <h2><a class="article-title" href="{{ url_for('posts.post', post_id=post.id) }}">{{ post.title }}</a></h2>
             <p class="article-content">{{ post.content }}</p>
+            <a class="btn btn-outline-info mb-4" href="{{ url_for('users.post_comments', post_id=post.id) }}">Comments</a>
             </div>
         </article>
     {% endfor %}
