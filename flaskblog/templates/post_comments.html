@@ -1,6 +1,5 @@
 {% extends "layout.html" %}
 {% block content %}
-    <a class="btn btn-outline-info mb-4" href="{{ url_for('users.user_comment') }}">Add a Comment</a>
     {% for comments in comments.items %}
         <article class="media content-section">
             <div class="article-metadata">
