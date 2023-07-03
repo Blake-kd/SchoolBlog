@@ -50,6 +50,12 @@ body {
     width: 65px;
     margin-right: 16px;
   }
+
+  .article-cimg {
+    height: 35px;
+    width: 35px;
+    margin-right: 8px;
+  }
   
   .article-metadata {
     padding-bottom: 1px;

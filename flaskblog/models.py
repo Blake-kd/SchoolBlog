@@ -1,7 +1,8 @@
 from datetime import datetime
 from itsdangerous import URLSafeTimedSerializer as Serializer
-from flaskblog import db, login_manager, app
+from flaskblog import db, login_manager, app, admin
 from flask_login import UserMixin
+from flask_admin.contrib.sqla import ModelView
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,23 +38,27 @@ class User(UserMixin, db.Model):
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(1000), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False,
-                            default=datetime.utcnow)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     comments = db.relationship('Comment', backref='post', lazy=True)
-
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}')"
     
 
 class Comment(db.Model):
+    from flaskblog import db
     id = db.Column(db.Integer, primary_key=True)
     date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    content = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.String(2000), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
 
     def __repr__(self):
         return f"Comment('{self.date_posted}')"
+
+
+admin.add_view(ModelView(User, db.session))
+admin.add_view(ModelView(Post, db.session))
+admin.add_view(ModelView(Comment, db.session))

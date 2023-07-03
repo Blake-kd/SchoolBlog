@@ -1,6 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
-from flaskblog import db, bcrypt
+from flaskblog import db, bcrypt, admin
 from flaskblog.models import User, Post, Comment
 from flaskblog.users.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm, CommentForm
 from flaskblog.users.utils import save_picture, send_reset_email
@@ -69,33 +69,31 @@ def user_posts(username):
     posts = Post.query.filter_by(author=user).order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
     return render_template('user_posts.html', posts=posts, user=user)
 
-@users.route('/comments/<int:post_id>', methods=['GET', 'POST'])
-def post_comments(post_id):
-    post = Post.query.get(post_id)
-    if post:
-        comments = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_posted.desc()).all()
-    else:
-        flash('Post does not exist', 'error')
-        return redirect(url_for('main.home'))
-    return render_template('post_comments.html', title='Comments', comments=comments)
-    
-
 @users.route('/postcomment/<int:post_id>', methods=['GET', 'POST'])
 @login_required
 def user_comment(post_id):
     form = CommentForm()
-    if form.validate_on_submit():
-        post = Post.query.get(post_id)
+    text = form.content.data
+    post = Post.query.get_or_404(post_id)
+    if not text:
+        pass
+    else:
+        post = Post.query.get_or_404(post_id)
         if post:
-            comment = Comment(content=form.content.data, author=current_user, post_id=post.id)
+            comment = Comment(content=text, author=current_user, post_id=post.id)
             db.session.add(comment)
             db.session.commit()
             flash('Your comment has been added', 'success')
+            form.content.data = ''
         else:
-            flash('Post does not exist', 'error')
-        return redirect(url_for('main.home'))
-    return render_template('user_comments.html', title='Add Comment', form=form)
-    
+            flash('Post does not exist.', 'error')
+            return redirect(url_for('main.home'))
+    comment = Comment.query.filter_by(post_id=post_id).order_by(Comment.date_posted.desc()).all()
+    return render_template('user_comments.html', title='Add Comment', form=form, comment=comment, post=post)
+
+@users.route('/admin', methods=['GET'])
+def admin_panel():
+    return admin.index()
 
 @users.route('/reset_password', methods=['GET', 'POST'])
 def reset_request():

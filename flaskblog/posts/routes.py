@@ -1,11 +1,10 @@
 from flask import render_template, url_for, flash, redirect, request, abort, Blueprint
 from flask_login import current_user, login_required
 from flaskblog import db
-from flaskblog.models import Post
+from flaskblog.models import Post, Comment
 from flaskblog.posts.forms import PostForm
 
 posts = Blueprint('posts', __name__)
-
 @posts.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def new_post():
@@ -48,6 +47,8 @@ def delete_post(post_id):
     if post.author != current_user:
         abort(403)
     db.session.delete(post)
+    for comment in post.comments:
+        db.session.delete(comment)
     db.session.commit()
     flash('Your post has been deleted!', 'success')
     return redirect(url_for('main.home'))
