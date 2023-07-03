@@ -33,9 +33,12 @@ def login():
         if user is not None and (user.password == form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(url_for('users.account')) if next_page else redirect(url_for('main.home'))
+            if next_page:
+                return redirect(url_for(next_page))
+            else:
+                redirect(url_for('main.home'))
         else:
-            flash("Invalid email or password🤔", 'danger')
+            flash("Invalid email or password", 'danger')
     return render_template('login.html', title='Login', form=form)
 
 @users.route('/logout')
